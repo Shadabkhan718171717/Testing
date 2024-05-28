@@ -1,0 +1,13 @@
+{
+  "name": "telegram-bot",
+  "version": "1.0.0",
+  "description": "A Telegram bot created by Shadab Khan",
+  "main": "Shadab.js",
+  "scripts": {
+    "start": "node Shadab.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.56.0",
+    "axios": "^0.21.1"
+  }
+}
