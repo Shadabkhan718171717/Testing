@@ -35,6 +35,11 @@ bot.onText(/\/code (.+)/, async (msg, match) => {
     }
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
 // Server ko specific port pe listen karna
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
