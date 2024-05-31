@@ -32,7 +32,13 @@ bot.onText(/\/code (.+)/, async (msg, match) => {
         await bot.editMessageText(formattedResponse, { chat_id: chatId, message_id: waitMessage.message_id, parse_mode: 'Markdown' });
     } catch (error) {
         console.error('Error:', error);
-        await bot.editMessageText('An error occurred while processing your request.', { chat_id: chatId, message_id: waitMessage.message_id });
+        console.error('Error response data:', error.response ? error.response.data : 'No response data');
+        
+        const errorMessage = 'An error occurred while processing your request.';
+        const detailedErrorMessage = error.response && error.response.data ? error.response.data : 'No additional error information available.';
+        
+        // Send detailed error message to the user
+        await bot.editMessageText(`${errorMessage}\n\n${detailedErrorMessage}`, { chat_id: chatId, message_id: waitMessage.message_id });
     }
 });
 
