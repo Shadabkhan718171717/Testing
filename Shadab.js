@@ -1,47 +1,49 @@
-const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
+require('dotenv').config({ path: './mybotconfig.env' });
 const express = require('express');
+const TelegramBot = require('node-telegram-bot-api');
+const { OpenAI } = require('openai');
 
-// Express app create karna
+// Initialize Express app
 const app = express();
 
-// Replace 'YOUR_TELEGRAM_BOT_TOKEN' with your actual Telegram bot token
-const bot = new TelegramBot('6911535039:AAHXY9rO7I9UB9nZPQleAOZhTr5VlcLYs04', { polling: true });
+// Initialize Telegram bot with your bot token from environment variable
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+
+// Initialize OpenAI client with your API key from environment variable and base URL
+const openai = new OpenAI(process.env.OPENAI_API_KEY, { baseUrl: 'https://api.openai.com/v1' });
 
 // Handle /start command
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
-    const introduction = `Welcome to the Bot!\n\nTo use this bot, simply type /code followed by your query.\nFor example: /code your_query_here\n\nThis bot was created by Shadab Khan.`;
-    bot.sendMessage(chatId, introduction);
+    const introduction = `
+\`\`\`
+Welcome to the Bot!
+
+To use this bot, simply type /chat followed by your message.
+For example: /chat Hello, how are you?
+
+This bot was created by Shadab Khan.
+\`\`\`
+`;
+    bot.sendMessage(chatId, introduction, { parse_mode: 'Markdown' });
 });
 
-// Handle /code command
-bot.onText(/\/code (.+)/, async (msg, match) => {
+// Handle /chat command
+bot.onText(/\/chat (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
-    const query = match[1];
-    
+    const message = match[1];
+
     // Send 'wait' message
     const waitMessage = await bot.sendMessage(chatId, 'Please wait while we process your request...');
 
     try {
-        const response = await axios.post('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
-            contents: [{
-                role: "user",
-                parts: [{
-                    text: query
-                }]
-            }]
-        }, {
-            headers: {
-                'x-goog-api-key': 'AIzaSyBBbRcsQIJRrqNSDONOm5IwJQnbElVCQvw'
-            }
+        const completion = await openai.chat.completions.create({
+            messages: [{ role: "user", content: message }],
+            model: "gpt-3.5-turbo",
         });
 
-        // Extracting the response text from the Gemini Pro API response
-        const generatedText = response.data.candidates[0].content.parts[0].text;
-
-        // Sending the generated text as a message to the chat
-        bot.sendMessage(chatId, generatedText);
+        const response = completion.choices[0].message.content;
+        bot.sendMessage(chatId, response);
 
         // Delete 'wait' message
         await bot.deleteMessage(chatId, waitMessage.message_id);
@@ -59,7 +61,7 @@ app.get('/health', (req, res) => {
     res.status(200).send('OK');
 });
 
-// Server ko specific port pe listen karna
+// Server listen on specific port
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
