@@ -1,4 +1,5 @@
-require('dotenv').config({ path: './mybotconfig.env' });
+require('dotenv').config({ path: './mybotconfig.env' }); // Load environment variables from mybotconfig.env file
+
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
 const { OpenAI } = require('openai');
