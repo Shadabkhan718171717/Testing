@@ -26,10 +26,16 @@ bot.onText(/\/code (.+)/, async (msg, match) => {
             query: query
         });
         const responseBody = response.data.msg;
+
+        // Check if the response body is code (you might need a more sophisticated check)
+        const isCode = responseBody.includes('\n') || responseBody.includes(';') || responseBody.includes('{') || responseBody.includes('}');
         
-        // Update 'wait' message with the response formatted as code in Markdown
-        const formattedResponse = `\`\`\`${responseBody}\`\`\``;
-        await bot.editMessageText(formattedResponse, { chat_id: chatId, message_id: waitMessage.message_id, parse_mode: 'Markdown' });
+        if (isCode) {
+            const formattedResponse = `\`\`\`${responseBody}\`\`\``;
+            await bot.editMessageText(formattedResponse, { chat_id: chatId, message_id: waitMessage.message_id, parse_mode: 'Markdown' });
+        } else {
+            await bot.editMessageText(responseBody, { chat_id: chatId, message_id: waitMessage.message_id });
+        }
     } catch (error) {
         console.error('Error:', error);
         console.error('Error response data:', error.response ? error.response.data : 'No response data');
